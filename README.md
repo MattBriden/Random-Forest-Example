@@ -70,7 +70,7 @@ rf = RandomForestRegressor(n_estimators=1000, random_state=42)
 rf.fit(train_features, train_labels)
 ```
 
-Once the forest has been fit with the training data we can test it out. Using the testing data that was created with scikit-learn we can gather predictions for each text and compare it against the actual classifications that we know each text to be. For this model it had an accuracy of 96% when predicting classifications for the testing data.
+Once the forest has been fit with the training data we can test it out. Using the testing data that was created with scikit-learn we can gather predictions for each text and compare it against the actual classifications that we know each text to be. For this model it had a Mean Absolute Error of 0.04, meaning that each classification that the model predicts is off by an average of 0.04. Since our classifications are 1 and 0 this shows that our model has made accurate predictions.
 ```python
 # test to see error rate
 predictions = rf.predict(test_features)
