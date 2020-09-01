@@ -41,7 +41,7 @@ To create the random forest we first needed to pull in our training data in a ma
 3   ham  U dun say so early hor... U c already then say...
 4   ham  Nah I don't think he goes to usf, he lives aro...
 ```
-The v1 column that indicated "ham" or "spam" was easy to change, it was decided "ham" would be represented by 0 and "spam" by 1. The text column was a bit more tricky. To make the data processable by machine learning algorithms we needed to tokenize and normalize each text. This was accomplished by using the CountVectorizer object from scikit-learn. This object takes each text and turns each word, defined as a "feature", into a count of its occurrences. Each feature is then weighted to diminish importance of words that occur in the majority of samples, think articles like "and" and "the". The CountVectorizer in this implementation only takes into account the most frequented 3000 words. Therefore each set of features, or tokenized and normalized representations of each text, will be an array of size 3000 with each object in the array being a count of how many times that word occurs in the text. Below is the implementation.
+The v1 column that indicated "ham" or "spam" was easy to change, it was decided "ham" would be represented by 0 and "spam" by 1. The text column was a bit more tricky. To make the data processable by machine learning algorithms we needed to tokenize and normalize each text. This was accomplished by using the CountVectorizer object from scikit-learn. This object takes each text and turns each word, defined as a "feature", into a count of its occurrences. The CountVectorizer in this implementation only takes into account the most frequented 3000 words. A list of "stop words" was also applied so to the CountVectorizer object so common words that don't help classification (think articles, pronouns, and prepositions) are not taken into top 3000 frequented word. Therefore each set of features, or tokenized and normalized representations of each text, will be an array of size 3000 with each object in the array being a count of how many times that word occurs in the text. Below is the implementation.
 ```python
 # replace "ham" and "spam" with 0 and 1
 cleanup_data = {"v1": {"ham": 0, "spam": 1}}
@@ -61,35 +61,33 @@ At this point the data is now in a format that can be used to create training an
 train_features, test_features, train_labels, test_labels = train_test_split(x, y, test_size=0.25,
 random_state=42)
 ```
-Now that the data has been split the random forest object can be instantiated. This implementation used a random forest with 1000 decision trees but with more trial and error this number could be fine tuned. Once the object is created it can be fit with the training data. With this particular implementation, due to the size of the data and number of decision trees, it took roughly one and a half hours to fit the forest. When recreating this example it would be wise to only use 10 decision trees which only takes a matter of seconds.
+Now that the data has been split the random forest object can be instantiated. This implementation used a random forest with 100 decision trees but with more trial and error this number could be fine tuned. Once the object is created it can be fit with the training data which completes our model.
 ```python
-# create a random forest with 1000 decision trees
-rf = RandomForestRegressor(n_estimators=1000, random_state=42)
-
+# create a random forest with 30 decision trees
+rf = RandomForestClassifier(n_estimators=100, random_state=42, criterion='entropy')
+ 
 # train data
 rf.fit(train_features, train_labels)
 ```
 
-Once the forest has been fit with the training data we can test it out. Using the testing data that was created with scikit-learn we can gather predictions for each text and compare it against the actual classifications that we know each text to be. For this model it had a Mean Absolute Error of 0.04, meaning that each classification that the model predicts is off by an average of 0.04. Since our classifications are 1 and 0 this shows that our model has made accurate predictions.
+Once the forest has been fit with the training data we can test it out. Using the testing data that was created with scikit-learn we can gather predictions for each text and compare it against the actual classifications that we know each text to be. For this model we had an accuracy of roughly 98%.
 ```python
-# test to see error rate
+# test to see accuracy
 predictions = rf.predict(test_features)
-errors = abs(predictions - test_labels)
-print(f'Error rate for test data: {round(np.mean(errors), 2)}')
->>> Error rate for test data: 0.04
+print(f'Accuracy of test: {accuracy_score(predictions, test_labels)}')
+>>> Accuracy of test: 0.9770279971284996
 ```
 The model could be fine tuned for greater accuracy but seemingly works well at a glance. More accurate or even a greater amount of data to train the model on could be beneficial in the future. Below is the results from predicting classifications for two texts, one obviously ham and the other more spam-like.
 ```python
-# text that is spam like being predicted as 97% chance of being spam
->>> spam_text = np.array(["Congratulations! You've won a $1,000 Walmart gift card. Go to http://bit.ly/123456
-to claim now."])
->>> spam_data = cv.transform(spam_text).toarray()
->>> rf.predict(spam_data)
-array([0.974])
+# text that is spam like being predicted as 96% chance of being spam
+spam_text = np.array(["FreeMsg: Txt: CALL to No: 86888 & claim your reward of 3 hours talk time to use from your phone now! ubscribe6GBP/ mnth inc 3hrs 16 stop?txtStop"])
+spam_data = cv.transform(spam_text).toarray()
+print(f'Probability of spam: {rf.predict_proba(spam_data)[0][1]}')
+>>> 0.96
 
 # text that is ham being predicted as 0% chance of being spam
->>> ham_text = np.array(["Hello mate, when can I expect you today?"])
->>> ham_data = cv.transform(ham_text).toarray()
->>> rf.predict(ham_data)
-array([0.0])
+ham_text = np.array(["Hello mate, when can I expect you today?"])
+ham_data = cv.transform(ham_text).toarray()
+print(f'Probability of ham: {rf.predict_proba(ham_data)[0][1]}')
+>>> 0.0
 ```
