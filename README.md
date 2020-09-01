@@ -20,10 +20,10 @@ Test against custom text messages using the python3 console and importing the pi
 >>> cv = pickle.load(open('../data/cv.p', 'rb'))
 >>> 
 >>> import numpy as np
->>> spam_text = np.array(["Congratulations! You've won a $1,000 Walmart gift card. Go to http://bit.ly/123456 to claim now."])
+>>> spam_text = np.array(["FreeMsg: Txt: CALL to No: 86888 & claim your reward of 3 hours talk time to use from your phone now! ubscribe6GBP/ mnth inc 3hrs 16 stop?txtStop"])
 >>> spam_data = cv.transform(spam_text).toarray()
->>> rf.predict(spam_data)
-array([1.0])
+>>> print(f'Probability of spam: {rf.predict_proba(spam_data)[0][1]}')
+>>> 0.96
 ```
 
 ## Explanation of Model
